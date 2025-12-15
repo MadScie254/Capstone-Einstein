@@ -1,22 +1,24 @@
 {
   "version": "1.0.0",
-  "created_at": "2025-12-16T02:13:32.090492",
+  "created_at": "2025-12-16T02:48:46.665132",
   "pipeline_version": "1.0.0",
   "models": {
     "xgb": {
       "type": "XGBClassifier",
-      "n_estimators": 100,
-      "auprc": 0.22378204309014757
+      "n_estimators": 200,
+      "max_depth": 6,
+      "auprc": 0.22239820841568442
     },
     "isolation_forest": {
       "type": "IsolationForest",
+      "n_clusters": 4,
       "contamination": 0.1
     }
   },
   "training": {
-    "n_samples": 20690,
+    "n_samples": 13284,
     "n_features": 44,
-    "theft_rate": 0.0820686321894635
+    "theft_rate": 0.0852905751279735
   },
   "feature_names": [
     "consumption_mean",
