@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "created_at": "2025-12-16T02:13:27.284026",
+  "created_at": "2025-12-16T02:34:59.233041",
   "n_features": 44,
   "feature_names": [
     "consumption_mean",
@@ -47,5 +47,24 @@
     "consumption_entropy",
     "peak_to_avg_ratio",
     "trough_to_avg_ratio"
-  ]
+  ],
+  "config": {
+    "rolling_windows": [
+      3,
+      7,
+      14
+    ],
+    "zero_threshold": 0.01,
+    "min_valid_days": 10
+  },
+  "train_stats": {
+    "mean": 11.216609480803186,
+    "std": 758.439798715119,
+    "median": 6.15,
+    "p25": 2.75,
+    "p75": 10.93
+  },
+  "source_file": "datasetsmall.csv",
+  "n_records": 25863,
+  "schema_hash": "69832ff4788a"
 }
