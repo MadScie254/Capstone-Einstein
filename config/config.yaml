@@ -1,0 +1,147 @@
+# Einstein NTL Detection System Configuration
+# Production settings - DO NOT commit secrets to version control
+
+# =============================================================================
+# Model Configuration
+# =============================================================================
+
+model:
+  version: "1.0.0"
+
+  # Ensemble weights
+  weights:
+    xgboost: 0.6
+    isolation_forest: 0.3
+    autoencoder: 0.1
+
+  # Artifacts directory
+  artifacts_dir: "./artifacts"
+
+# =============================================================================
+# Threshold Configuration
+# =============================================================================
+
+thresholds:
+  # Classification thresholds
+  high_risk: 0.80
+  medium_risk: 0.50
+  low_risk: 0.30
+
+  # Operational threshold for flagging
+  operational: 0.65
+
+  # Isolation Forest percentile (flag top X%)
+  isolation_percentile: 90
+
+  # Minimum prediction confidence
+  min_confidence: 0.6
+
+# =============================================================================
+# Feature Engineering
+# =============================================================================
+
+features:
+  # Rolling window sizes (days)
+  rolling_windows:
+    - 3
+    - 7
+    - 14
+
+  # Zero consumption threshold (kWh)
+  zero_threshold: 0.01
+
+  # Minimum valid days for scoring
+  min_valid_days: 10
+
+  # Sudden drop detection threshold (% change)
+  sudden_drop_threshold: 0.50
+
+# =============================================================================
+# Data Quality
+# =============================================================================
+
+quality:
+  # Maximum missing data ratio for scoring
+  max_missing_ratio: 0.30
+
+  # Cold start period (days)
+  cold_start_days: 30
+
+  # Flag customers with all-zero consumption
+  flag_all_zero: true
+
+# =============================================================================
+# Drift Monitoring
+# =============================================================================
+
+monitoring:
+  # Population Stability Index threshold
+  psi_warning: 0.10
+  psi_critical: 0.25
+
+  # Score drift monitoring
+  score_drift_window_days: 7
+
+  # Retrain trigger conditions
+  retrain_precision_threshold: 0.40
+
+# =============================================================================
+# Operational Limits
+# =============================================================================
+
+operations:
+  # Maximum monthly flags (% of customer base)
+  max_monthly_flag_rate: 0.05
+
+  # Investigation capacity per month
+  investigation_capacity: 500
+
+  # Priority queue sizes
+  high_priority_queue: 50
+  medium_priority_queue: 200
+
+# =============================================================================
+# API Configuration
+# =============================================================================
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+
+  # Rate limiting
+  rate_limit_requests: 100
+  rate_limit_window_seconds: 60
+
+  # Batch scoring limits
+  max_batch_size: 1000
+
+  # Request timeout (seconds)
+  timeout: 30
+
+# =============================================================================
+# Logging and Audit
+# =============================================================================
+
+logging:
+  level: "INFO"
+
+  # Audit log settings
+  audit:
+    enabled: true
+    retention_days: 365
+    include_features: false
+    include_explanations: true
+
+# =============================================================================
+# Privacy Settings
+# =============================================================================
+
+privacy:
+  # Hash customer IDs in logs
+  hash_customer_ids: true
+
+  # Exclude raw consumption from audit logs
+  exclude_raw_data: true
+
+  # Data retention (days)
+  prediction_retention_days: 90

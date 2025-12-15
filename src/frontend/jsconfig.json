@@ -1,0 +1,9 @@
+# jsconfig for path aliases
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

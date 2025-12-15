@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   Einstein Electricity Theft Detection System
+   Global Styles - Dark Theme with Neon Accents
+   ============================================ */
+
+:root {
+  /* Color palette */
+  --color-dark-100: #1a1a2e;
+  --color-dark-200: #16213e;
+  --color-dark-300: #0f0f1a;
+
+  --color-neon-cyan: #00d9ff;
+  --color-neon-green: #00ff88;
+  --color-neon-pink: #ff00ff;
+  --color-neon-red: #ff4444;
+  --color-neon-orange: #ff6600;
+
+  /* Glass effect */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Base styles */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
+  color: #ffffff;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--color-neon-cyan),
+    var(--color-neon-green)
+  );
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neon-cyan);
+}
+
+/* ============================================
+   Component Styles
+   ============================================ */
+
+/* Glass card effect */
+@layer components {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10 shadow-glass;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:bg-white/10 hover:shadow-glow-cyan hover:border-neon-cyan/30;
+  }
+
+  /* Neon text gradient */
+  .neon-text {
+    @apply bg-gradient-to-r from-neon-cyan via-neon-green to-neon-pink bg-clip-text text-transparent;
+  }
+
+  /* Risk level badges */
+  .risk-badge {
+    @apply px-4 py-1.5 rounded-full font-semibold text-sm inline-flex items-center gap-2;
+  }
+
+  .risk-high {
+    @apply bg-gradient-to-r from-red-500 to-red-600 text-white animate-pulse;
+  }
+
+  .risk-medium {
+    @apply bg-gradient-to-r from-orange-500 to-yellow-500 text-white;
+  }
+
+  .risk-low {
+    @apply bg-gradient-to-r from-green-500 to-emerald-500 text-white;
+  }
+
+  /* Glow button */
+  .glow-button {
+    @apply relative px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+    @apply bg-gradient-to-r from-neon-cyan to-neon-green text-dark-300;
+    @apply hover:shadow-glow-cyan hover:scale-105;
+  }
+
+  .glow-button:active {
+    @apply scale-95;
+  }
+
+  /* Danger button */
+  .danger-button {
+    @apply relative px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+    @apply bg-gradient-to-r from-red-500 to-orange-500 text-white;
+    @apply hover:shadow-glow-red hover:scale-105;
+  }
+
+  /* Input fields */
+  .input-glass {
+    @apply w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10;
+    @apply text-white placeholder-gray-400;
+    @apply focus:outline-none focus:border-neon-cyan/50 focus:ring-2 focus:ring-neon-cyan/20;
+    @apply transition-all duration-200;
+  }
+
+  /* Metric card */
+  .metric-card {
+    @apply glass-card p-6 flex flex-col items-center justify-center text-center;
+  }
+
+  .metric-value {
+    @apply text-3xl font-bold neon-text;
+  }
+
+  .metric-label {
+    @apply text-sm text-gray-400 mt-2;
+  }
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px var(--color-neon-cyan), 0 0 10px var(--color-neon-cyan);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--color-neon-cyan), 0 0 30px var(--color-neon-cyan);
+  }
+}
+
+@keyframes theft-alert {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-theft-alert {
+  animation: theft-alert 0.5s ease-in-out infinite;
+}
+
+/* ============================================
+   Chart Customizations
+   ============================================ */
+
+/* Recharts tooltip styling */
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+.recharts-default-tooltip {
+  @apply glass-card !bg-dark-200/95 !border-neon-cyan/30 !rounded-xl;
+}
+
+.recharts-tooltip-label {
+  @apply text-neon-cyan font-semibold;
+}
+
+.recharts-tooltip-item {
+  @apply text-white;
+}
+
+/* ============================================
+   Drag and Drop Zone
+   ============================================ */
+
+.dropzone {
+  @apply glass-card p-8 border-2 border-dashed border-white/20;
+  @apply flex flex-col items-center justify-center gap-4;
+  @apply transition-all duration-300 cursor-pointer;
+  @apply hover:border-neon-cyan/50 hover:bg-neon-cyan/5;
+}
+
+.dropzone.active {
+  @apply border-neon-cyan bg-neon-cyan/10;
+}
+
+/* ============================================
+   Responsive Utilities
+   ============================================ */
+
+@media (max-width: 768px) {
+  .glass-card {
+    @apply rounded-xl p-4;
+  }
+
+  .metric-value {
+    @apply text-2xl;
+  }
+}
