@@ -1,0 +1,34 @@
+{
+  "n_clusters": 4,
+  "created_at": "2025-12-16T02:45:20.837920",
+  "profiles": {
+    "0": {
+      "name": "Low Consumption, Moderate Pattern",
+      "mean_consumption": 8.825923145732359,
+      "cv": 0.4847108934749302,
+      "n_customers": 10200,
+      "theft_rate": 0.07127450980392157
+    },
+    "1": {
+      "name": "High Consumption, Variable Pattern",
+      "mean_consumption": 19807.698461538464,
+      "cv": 4.999915386789156,
+      "n_customers": 1,
+      "theft_rate": 1.0
+    },
+    "2": {
+      "name": "Low Consumption, Variable Pattern",
+      "mean_consumption": 7.023491206245949,
+      "cv": 0.9795680713830912,
+      "n_customers": 11935,
+      "theft_rate": 0.09685798072894847
+    },
+    "3": {
+      "name": "High Consumption, Variable Pattern",
+      "mean_consumption": 2056.642948717949,
+      "cv": 1.043856765650122,
+      "n_customers": 6,
+      "theft_rate": 0.8333333333333334
+    }
+  }
+}
