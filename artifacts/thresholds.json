@@ -1,0 +1,7 @@
+{
+  "xgb_default": 0.5,
+  "xgb_operational": 0.5885686874389648,
+  "isolation_percentile": 90,
+  "high_risk": 0.8,
+  "medium_risk": 0.5
+}
