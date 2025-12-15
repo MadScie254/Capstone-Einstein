@@ -100,9 +100,9 @@ def run_pipeline(
     pipeline.save(str(artifacts_dir / 'pipeline_v1.joblib'))
     log(f"  Saved pipeline to pipeline_v1.joblib")
     
-    # Save features
-    features.to_parquet(artifacts_dir / 'preprocessed.parquet', index=False)
-    log(f"  Saved features to preprocessed.parquet")
+    # Save features (using CSV for compatibility)
+    features.to_csv(artifacts_dir / 'preprocessed.csv', index=False)
+    log(f"  Saved features to preprocessed.csv")
     
     # Save feature schema
     feature_schema = {
