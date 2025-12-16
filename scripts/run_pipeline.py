@@ -61,6 +61,9 @@ def run_pipeline(
     if data_path and Path(data_path).exists():
         log(f"  Loading data from {data_path}")
         df = pd.read_csv(data_path)
+    elif (data_dir / 'dataset.csv').exists():
+        log(f"  Loading data from dataset.csv (Big Data Mode)")
+        df = pd.read_csv(data_dir / 'dataset.csv')
     elif (data_dir / 'datasetsmall.csv').exists():
         log(f"  Loading data from datasetsmall.csv")
         df = pd.read_csv(data_dir / 'datasetsmall.csv')

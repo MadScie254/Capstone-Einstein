@@ -7,11 +7,11 @@ notebook_path = Path(r"c:\Users\MadScie254\Documents\GitHub\Capstone-Einstein\Ca
 with open(notebook_path, 'r', encoding='utf-8') as f:
     nb = json.load(f)
 
-print("Searching for cell with 'consumption_values < zero_threshold'...")
+print("Searching for cell with 'datasetsmall.csv'...")
 for i, cell in enumerate(nb['cells']):
     if cell['cell_type'] == 'code':
         source = cell['source']
         for line in source:
-            if "zeros_per_customer =" in line:
+            if "datasetsmall.csv" in line:
                 print(f"Found in cell {i}:")
                 print(repr(line))
