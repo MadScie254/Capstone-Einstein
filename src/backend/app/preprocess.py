@@ -226,21 +226,25 @@ class FeaturePipeline:
         features = {}
         n_samples, n_days = matrix.shape
         
-        # Trend (linear regression slope)
+        # Trend (linear regression slope) - Vectorized
+        # Slope = (N*Σxy - ΣxΣy) / (N*Σx² - (Σx)²)
         x = np.arange(n_days)
-        slopes = []
-        for i in range(n_samples):
-            y = matrix[i]
-            valid_mask = ~np.isnan(y)
-            if np.sum(valid_mask) >= 2:
-                try:
-                    slope, _, _, _, _ = stats.linregress(x[valid_mask], y[valid_mask])
-                    slopes.append(slope)
-                except:
-                    slopes.append(0.0)
-            else:
-                slopes.append(0.0)
-        features['consumption_trend'] = np.array(slopes)
+        # Handle missings by filling with row mean for trend calc (approx)
+        row_means = np.nanmean(matrix, axis=1).reshape(-1, 1)
+        matrix_filled = np.where(np.isnan(matrix), row_means, matrix)
+        
+        N = n_days
+        sum_x = np.sum(x)
+        sum_x_sq = np.sum(x**2)
+        sum_y = np.sum(matrix_filled, axis=1)
+        sum_xy = np.sum(matrix_filled * x, axis=1)
+        
+        numerator = N * sum_xy - sum_x * sum_y
+        denominator = N * sum_x_sq - sum_x**2
+        
+        # Avoid division by zero
+        slopes = np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator!=0)
+        features['consumption_trend'] = slopes
         
         # First half vs second half ratio
         half = n_days // 2
@@ -252,21 +256,25 @@ class FeaturePipeline:
             1.0
         )
         
-        # Autocorrelation (lag 1)
-        autocorr = []
-        for i in range(n_samples):
-            y = matrix[i]
-            valid_mask = ~np.isnan(y)
-            if np.sum(valid_mask) >= 3:
-                y_clean = y[valid_mask]
-                if len(y_clean) > 1:
-                    corr = np.corrcoef(y_clean[:-1], y_clean[1:])[0, 1]
-                    autocorr.append(corr if not np.isnan(corr) else 0.0)
-                else:
-                    autocorr.append(0.0)
-            else:
-                autocorr.append(0.0)
-        features['autocorrelation'] = np.array(autocorr)
+        # Autocorrelation (lag 1) - Vectorized
+        # Corr(X_t, X_{t+1})
+        # Use filled matrix from above to handle NaNs
+        matrix_trunc = matrix_filled[:, :-1]
+        matrix_shifted = matrix_filled[:, 1:]
+        
+        # Center the data
+        mean_trunc = np.mean(matrix_trunc, axis=1, keepdims=True)
+        mean_shifted = np.mean(matrix_shifted, axis=1, keepdims=True)
+        
+        trunc_centered = matrix_trunc - mean_trunc
+        shifted_centered = matrix_shifted - mean_shifted
+        
+        numerator = np.sum(trunc_centered * shifted_centered, axis=1)
+        denominator = np.sqrt(np.sum(trunc_centered**2, axis=1) * np.sum(shifted_centered**2, axis=1))
+        
+        # Handle division by zero
+        autocorr = np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator!=0)
+        features['autocorrelation'] = autocorr
         
         # Day-over-day changes
         daily_changes = np.diff(matrix, axis=1)

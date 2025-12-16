@@ -140,31 +140,69 @@ def run_pipeline(
     log(f"  Training samples: {len(X_train)}")
     log(f"  Test samples: {len(X_test)}")
     
-    # Train XGBoost
-    log("  Training XGBoost classifier...")
-    scale_pos_weight = (y_train == 0).sum() / max((y_train == 1).sum(), 1)
+    # --- Champion-Challenger Model Training ---
+    log("  Training Champion (XGBoost) and Challenger (Random Forest)...")
     
+    # Split data (using last 20% as validation - temporal split)
+    train_size = int(len(features) * 0.8)
+    X_train = features.drop(columns=['CONS_NO', 'FLAG']).iloc[:train_size]
+    y_train = features['FLAG'].iloc[:train_size]
+    X_val = features.drop(columns=['CONS_NO', 'FLAG']).iloc[train_size:]
+    y_val = features['FLAG'].iloc[train_size:]
+    
+    # 1. Train Champion: XGBoost
     xgb_model = XGBClassifier(
-        n_estimators=100,
-        max_depth=5,
-        learning_rate=0.1,
-        scale_pos_weight=scale_pos_weight,
-        random_state=42,
-        eval_metric='aucpr',
-        use_label_encoder=False
+        n_estimators=100, 
+        max_depth=6, 
+        learning_rate=0.1, 
+        eval_metric='logloss',
+        random_state=42
     )
-    xgb_model.fit(X_train, y_train, verbose=False)
+    xgb_model.fit(X_train, y_train)
     
-    # Evaluate
-    y_proba = xgb_model.predict_proba(X_test)[:, 1]
-    precision, recall, _ = precision_recall_curve(y_test, y_proba)
-    auprc = auc(recall, precision)
+    # Evaluate Champion
+    y_pred_xgb = xgb_model.predict_proba(X_val)[:, 1]
+    auprc_xgb = average_precision_score(y_val, y_pred_xgb)
+    log(f"  XGBoost (Champion) AUPRC: {auprc_xgb:.4f}")
     
-    log(f"  XGBoost AUPRC: {auprc:.4f}")
+    # 2. Train Challenger: Random Forest (Surgical Ensemble)
+    from sklearn.ensemble import RandomForestClassifier
+    rf_model = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=10,
+        random_state=42,
+        n_jobs=-1
+    )
+    rf_model.fit(X_train, y_train)
     
-    # Save XGBoost
-    joblib.dump(xgb_model, artifacts_dir / 'model_xgb.joblib')
-    log(f"  Saved XGBoost model")
+    # Evaluate Challenger
+    y_pred_rf = rf_model.predict_proba(X_val)[:, 1]
+    auprc_rf = average_precision_score(y_val, y_pred_rf)
+    log(f"  Random Forest (Challenger) AUPRC: {auprc_rf:.4f}")
+    
+    # Select Winner
+    if auprc_rf > auprc_xgb:
+        winner_name = "RandomForest"
+        winner_model = rf_model
+        winner_score = auprc_rf
+        log(f"  🏆 NEW CHAMPION: Random Forest outperforms XGBoost by {auprc_rf - auprc_xgb:.4f}")
+    else:
+        winner_name = "XGBoost"
+        winner_model = xgb_model
+        winner_score = auprc_xgb
+        log(f"  🏆 CHAMPION RETAINED: XGBoost wins")
+    
+    # Save the winner
+    model_path = artifacts_dir / 'model_xgb.joblib' # Keep filename for consistency
+    joblib.dump(winner_model, model_path)
+    log(f"  Saved best model ({winner_name}) to artifacts/model_xgb.joblib")
+    
+    # Save Challenger too for comparison view
+    rf_path = artifacts_dir / 'model_rf.joblib'
+    joblib.dump(rf_model, rf_path)
+
+    # --- Unsupervised Model ---
+    log("  Training Unsupervised Model (Isolation Forest)...")
     
     # Train Isolation Forest
     log("  Training Isolation Forest...")
