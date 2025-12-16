@@ -18,6 +18,9 @@ sys.path.insert(0, str(PROJECT_ROOT / 'src' / 'backend'))
 import numpy as np
 import pandas as pd
 import joblib
+from xgboost import XGBClassifier
+from sklearn.ensemble import IsolationForest
+from sklearn.metrics import average_precision_score, precision_recall_curve, auc
 
 
 def run_pipeline(
