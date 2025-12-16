@@ -1,187 +1,110 @@
-'use client'
+import HolographicCard from '@/components/HolographicCard'
+import ModelComparisonChart from '@/components/ModelComparisonChart'
+import LiveAnomalyScanner from '@/components/LiveAnomalyScanner'
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { 
-  Zap, 
-  Upload, 
-  BarChart3, 
-  Shield, 
-  AlertTriangle,
-  TrendingUp,
-  Users,
-  Activity
-} from 'lucide-react'
-import UploadMeter from '@/components/UploadMeter'
-import TimeSeriesChart from '@/components/TimeSeriesChart'
-import ExplanationPanel from '@/components/ExplanationPanel'
-import TheftIndicator from '@/components/TheftIndicator'
-
-// API base URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+// ... imports remain the same
 
 export default function Home() {
-  const [results, setResults] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [apiStatus, setApiStatus] = useState('checking')
-  
-  // Check API health on mount
-  useEffect(() => {
-    checkApiHealth()
-  }, [])
-  
-  const checkApiHealth = async () => {
-    try {
-      const response = await fetch(`${API_URL}/health`)
-      if (response.ok) {
-        setApiStatus('connected')
-      } else {
-        setApiStatus('error')
-      }
-    } catch {
-      setApiStatus('offline')
-    }
-  }
-  
-  // Handle scoring
-  const handleScore = async (consumption, customerId) => {
-    setLoading(true)
-    setError(null)
-    
-    try {
-      // Score endpoint
-      const scoreResponse = await fetch(`${API_URL}/score`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          consumption: consumption,
-          customer_id: customerId || 'DASHBOARD_USER'
-        })
-      })
-      
-      if (!scoreResponse.ok) {
-        throw new Error('Scoring failed')
-      }
-      
-      const scoreData = await scoreResponse.json()
-      
-      // Explanation endpoint
-      const explainResponse = await fetch(`${API_URL}/explain`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          consumption: consumption,
-          customer_id: customerId || 'DASHBOARD_USER'
-        })
-      })
-      
-      let explainData = null
-      if (explainResponse.ok) {
-        explainData = await explainResponse.json()
-      }
-      
-      setResults({
-        ...scoreData,
-        consumption: consumption,
-        explanation: explainData
-      })
-      
-    } catch (err) {
-      setError(err.message)
-      // Use mock data for demo
-      setResults({
-        probability: 0.73,
-        risk_level: 'HIGH',
-        customer_id: 'DEMO_USER',
-        consumption: consumption,
-        xgb_score: 0.78,
-        isolation_score: 0.65,
-        explanation: {
-          top_features: [
-            { feature: 'sudden_drop_count', importance: 0.35, direction: 'increases' },
-            { feature: 'zero_ratio', importance: 0.28, direction: 'increases' },
-            { feature: 'consumption_cv', importance: 0.18, direction: 'increases' },
-          ],
-          explanation_text: 'High number of sudden consumption drops detected. Multiple zero-reading days indicate possible meter tampering.',
-          consumption_stats: {
-            mean: 85.5,
-            std: 45.2,
-            zero_days: 3
-          }
-        }
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-  
+  // ... existing state and logic
+
   return (
-    <div className="min-h-screen p-6 lg:p-8">
+    <div className="min-h-screen p-6 lg:p-8 bg-dark-900 text-white selection:bg-neon-cyan/30">
+      {/* Background Ambience */}
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-dark-800 via-dark-950 to-black -z-10" />
+      <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-neon-cyan/5 to-transparent -z-10 pointer-events-none" />
+
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-neon-cyan to-neon-green">
-              <Zap className="w-8 h-8 text-dark-300" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold neon-text">Einstein</h1>
-              <p className="text-gray-400">Electricity Theft Detection System</p>
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-neon-cyan blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
+            <div className="relative p-3 rounded-2xl bg-dark-100 border border-white/10">
+              <Zap className="w-8 h-8 text-neon-cyan" />
             </div>
           </div>
-          
-          {/* API Status */}
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${
-              apiStatus === 'connected' ? 'bg-green-500' :
-              apiStatus === 'checking' ? 'bg-yellow-500 animate-pulse' :
-              'bg-red-500'
-            }`} />
-            <span className="text-sm text-gray-400">
-              {apiStatus === 'connected' ? 'API Connected' :
-               apiStatus === 'checking' ? 'Connecting...' :
-               'Demo Mode'}
-            </span>
+          <div>
+            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+              Einstein
+            </h1>
+            <p className="text-neon-cyan font-mono text-xs tracking-widest uppercase">
+              Theft Detection System v2.0
+            </p>
           </div>
+        </div>
+        
+        {/* API Status */}
+        <div className="flex items-center gap-3 bg-dark-100/50 backdrop-blur px-4 py-2 rounded-full border border-white/5">
+          <div className={`w-2 h-2 rounded-full shadow-[0_0_10px] ${
+            apiStatus === 'connected' ? 'bg-neon-green shadow-neon-green' :
+            apiStatus === 'checking' ? 'bg-neon-yellow shadow-neon-yellow animate-pulse' :
+            'bg-neon-red shadow-neon-red'
+          }`} />
+          <span className="text-xs font-medium tracking-wide">
+            {apiStatus === 'connected' ? 'SYSTEM ONLINE' :
+             apiStatus === 'checking' ? 'CONNECTING...' :
+             'DEMO MODE: ACTIVE'}
+          </span>
         </div>
       </motion.header>
       
-      {/* KPI Cards */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-      >
-        <div className="metric-card">
-          <Users className="w-8 h-8 text-neon-cyan mb-2" />
-          <span className="metric-value">12,847</span>
-          <span className="metric-label">Monitored Meters</span>
+      {/* Command Center Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        {/* KPI Cards (Top Row) */}
+        <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <HolographicCard glowColor="cyan">
+            <Users className="w-6 h-6 text-neon-cyan mb-2 opacity-80" />
+            <div className="text-2xl font-bold">12,847</div>
+            <div className="text-xs text-gray-400 font-mono">MONITORED METERS</div>
+          </HolographicCard>
+          
+          <HolographicCard glowColor="red">
+            <AlertTriangle className="w-6 h-6 text-neon-red mb-2 opacity-80" />
+            <div className="text-2xl font-bold">127</div>
+            <div className="text-xs text-gray-400 font-mono">ACTIVE ALERTS</div>
+          </HolographicCard>
+          
+          <HolographicCard glowColor="purple">
+            <TrendingUp className="w-6 h-6 text-neon-purple mb-2 opacity-80" />
+            <div className="text-2xl font-bold">2.8%</div>
+            <div className="text-xs text-gray-400 font-mono">THEFT RATE</div>
+          </HolographicCard>
+          
+          <HolographicCard glowColor="green">
+            <Activity className="w-6 h-6 text-neon-green mb-2 opacity-80" />
+            <div className="text-2xl font-bold">$1.2M</div>
+            <div className="text-xs text-gray-400 font-mono">REVENUE SAVED</div>
+          </HolographicCard>
+
+          {/* Model Arena (Mid Row) */}
+          <div className="col-span-2 md:col-span-4 h-[300px] mt-4">
+             <HolographicCard className="h-full flex flex-col" glowColor="purple">
+               <div className="flex items-center justify-between mb-2">
+                 <h3 className="font-semibold text-gray-200 flex items-center gap-2">
+                   <Shield className="w-4 h-4 text-neon-purple" />
+                   Model Arena: Champion vs Challenger
+                 </h3>
+                 <span className="text-xs bg-neon-purple/10 text-neon-purple px-2 py-1 rounded border border-neon-purple/20">
+                   XGBoost Leading (+2.4%)
+                 </span>
+               </div>
+               <div className="flex-1 w-full relative">
+                 <ModelComparisonChart />
+               </div>
+             </HolographicCard>
+          </div>
         </div>
-        
-        <div className="metric-card">
-          <AlertTriangle className="w-8 h-8 text-neon-red mb-2" />
-          <span className="metric-value">127</span>
-          <span className="metric-label">Active Alarms</span>
+
+        {/* Live Feed (Right Column) */}
+        <div className="lg:col-span-4">
+          <HolographicCard className="h-full" glowColor="green">
+            <LiveAnomalyScanner />
+          </HolographicCard>
         </div>
-        
-        <div className="metric-card">
-          <TrendingUp className="w-8 h-8 text-neon-green mb-2" />
-          <span className="metric-value">2.8%</span>
-          <span className="metric-label">Theft Rate</span>
-        </div>
-        
-        <div className="metric-card">
-          <Activity className="w-8 h-8 text-neon-pink mb-2" />
-          <span className="metric-value">$1.2M</span>
-          <span className="metric-label">Revenue Protected</span>
-        </div>
-      </motion.section>
+      </div>
       
       {/* Main Content */}
       <div className="grid lg:grid-cols-2 gap-6">

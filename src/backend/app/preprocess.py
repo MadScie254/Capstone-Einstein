@@ -140,6 +140,9 @@ class FeaturePipeline:
         # Temporal features
         features.update(self._compute_temporal_features(consumption_matrix))
         
+        # Spectral features (New: Surgical Accuracy)
+        features.update(self._compute_spectral_features(consumption_matrix))
+        
         # Create feature DataFrame
         feature_df = pd.DataFrame(features)
         
@@ -456,6 +459,64 @@ class FeaturePipeline:
         for key in features:
             features[key] = np.nan_to_num(features[key], nan=0.0, posinf=0.0, neginf=0.0)
         
+        return features
+
+    def _compute_spectral_features(self, matrix: np.ndarray) -> Dict[str, np.ndarray]:
+        """
+        Compute frequency domain features using FFT.
+        This detects hidden periodicities or lack thereof (random noise).
+        """
+        features = {}
+        n_samples, n_days = matrix.shape
+        
+        # FFT requires no NaNs. We interpolate or fill with mean.
+        # Simple forward fill + backward fill + fill mean
+        matrix_filled = matrix.copy()
+        
+        # Row-wise fill
+        for i in range(n_samples):
+            row = matrix_filled[i]
+            if np.isnan(row).any():
+                # Simple linear interpolation
+                valid = ~np.isnan(row)
+                if valid.sum() > 1:
+                    x = np.arange(n_days)
+                    row[~valid] = np.interp(x[~valid], x[valid], row[valid])
+                else:
+                    row[:] = 0
+            matrix_filled[i] = row
+            
+        # Compute FFT
+        # rfft returns the positive frequencies
+        fft_vals = np.fft.rfft(matrix_filled, axis=1)
+        power_spectrum = np.abs(fft_vals)**2
+        
+        # Spectral Entropy
+        # Normalize power spectrum to be a probability distribution
+        ps_sum = np.sum(power_spectrum, axis=1, keepdims=True) + 1e-10
+        ps_norm = power_spectrum / ps_sum
+        features['spectral_entropy'] = -np.sum(ps_norm * np.log2(ps_norm + 1e-10), axis=1)
+        
+        # Dominant Frequency (excluding DC component at index 0)
+        # We only care about the index of the max power
+        if power_spectrum.shape[1] > 1:
+            features['dominant_freq_idx'] = np.argmax(power_spectrum[:, 1:], axis=1) + 1
+        else:
+            features['dominant_freq_idx'] = np.zeros(n_samples)
+            
+        # Energy concentration (ratio of top 3 frequencies energy to total)
+        if power_spectrum.shape[1] > 3:
+            sorted_ps = np.sort(power_spectrum[:, 1:], axis=1)[:, ::-1] # Sort descending
+            top3_energy = np.sum(sorted_ps[:, :3], axis=1)
+            total_energy = np.sum(power_spectrum[:, 1:], axis=1) + 1e-10
+            features['spectral_energy_concentration'] = top3_energy / total_energy
+        else:
+            features['spectral_energy_concentration'] = np.ones(n_samples)
+
+        # Replace inf/nan
+        for key in features:
+            features[key] = np.nan_to_num(features[key], nan=0.0, posinf=0.0, neginf=0.0)
+            
         return features
     
     def get_feature_names(self) -> List[str]:
